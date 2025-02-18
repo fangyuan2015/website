@@ -14,6 +14,25 @@ The initial settings for Longhorn can be customized by [editing the deployment c
 
 ## Installing Longhorn
 
+0.直接使用yaml文件安装会报错,无法完成deploy longhorn-driver-deployer 部署
+time="2025-02-18T12:26:04Z" level=fatal msg="Error deploying driver: failed to start CSI driver: failed to get arg root-dir. Need to specify \"\" in your Longhorn deployment yaml.: failed to get cmdline of proc kubelet: an error on the server (\"unknown\") has prevented the request from succeeding (get pods discover-proc-kubelet-cmdline)" func=app.DeployDriverCmd.func1 file="driver.go:140"
+解决方法:
+部署前需要修改longhorn.yaml 在以下位置增加:
+        - name: longhorn-driver-deployer
+          image: longhornio/longhorn-manager:v1.8.x-head
+          imagePullPolicy: IfNotPresent
+          command:
+          - longhorn-manager
+          - -d
+          - deploy-driver
+          - --manager-image
+          - "longhornio/longhorn-manager:v1.8.x-head"
+          - --manager-url
+          - http://longhorn-backend:9500/v1
+          #以下两行为需要增加内容(如果节点的kubelet不是默认的/var/lib/kubelet需要对应修改)
+          - --kubelet-root-dir
+          - /var/lib/kubelet
+
 1. Install Longhorn on any Kubernetes cluster using this command:
 
     ```shell
